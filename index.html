@@ -24,7 +24,7 @@
         }
 
         /* Tıklama gecikmesini önlemek için */
-        .tool-btn, .btn, .stannius-btn, #history-slider, #heart-animation-layer, #main-scene {
+        .tool-btn, .btn, .stannius-btn, #heart-animation-layer, #main-scene {
             touch-action: manipulation;
         }
 
@@ -42,8 +42,8 @@
         #history-slider { width: 100%; margin: 0; height: 25px; cursor: pointer; background: #e0e0e0; }
         
         #action-ribbon {
-            height: 30px; background-color: #fff9c4; border-top: 1px solid #ddd;
-            display: flex; align-items: center; justify-content: center; padding: 0 10px; font-size: 14px; font-weight: bold; color: #333;
+            min-height: 35px; height: auto; background-color: #fff9c4; border-top: 1px solid #ddd;
+            display: flex; align-items: center; justify-content: center; padding: 5px 10px; font-size: 13px; font-weight: bold; color: #333;
             text-align: center;
         }
 
@@ -113,7 +113,7 @@
         #left-panel {
             position: absolute; left: 8px; top: 10px;
             display: flex; flex-direction: column; gap: 8px; z-index: 30;
-            width: 105px; pointer-events: auto;
+            width: 115px; pointer-events: auto;
         }
         #right-panel {
             position: absolute; right: 8px; top: 10px;
@@ -129,7 +129,7 @@
         #data-table td, #data-table th { border: 1px solid #aaa; padding: 4px; text-align: center; }
         #data-table th { font-weight: bold; background: #e0e0e0; }
         
-        .zoom-controls { display: flex; flex-direction: column; gap: 4px; }
+        .zoom-controls { display: flex; flex-direction: row; gap: 4px; }
         .btn { font-weight: bold; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 12px; height: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); touch-action: manipulation; }
         .btn-dark { background-color: #212121; }
         .btn-red { background-color: #d32f2f; height: 38px; }
@@ -142,7 +142,7 @@
     <div id="cardiogram-section">
         <canvas id="cardiogram-canvas"></canvas>
         <input type="range" id="history-slider" min="0" max="100" value="100" disabled>
-        <div id="action-ribbon"><span id="action-text">Seçilen Araç: BEKLENİYOR</span></div>
+        <div id="action-ribbon"><span id="action-text">Dekapite edilmiş ve spinal kordu pittingle haraplanmış kurbağanın göğsünü açın.</span></div>
     </div>
 
     <div id="middle-section">
@@ -158,13 +158,13 @@
             <div id="left-panel">
                 <table id="data-table">
                     <tr style="background:#444; color:white;"><th colspan="2" style="font-size:10px; padding:2px;">DEĞERLER</th></tr>
-                    <tr><th style="width:55%;">V.BPM</th><td style="width:45%;" id="val-bpm-v">0</td></tr>
-                    <tr><th>A.BPM</th><td id="val-bpm-a">0</td></tr>
+                    <tr><th style="width:60%;">Ventrikül<br>BPM</th><td style="width:40%;" id="val-bpm-v">0</td></tr>
+                    <tr><th>Atrial<br>BPM</th><td id="val-bpm-a">0</td></tr>
                     <tr><th>Genlik</th><td id="val-amp">0.0</td></tr>
                 </table>
                 <div class="zoom-controls">
-                    <button class="btn btn-dark" id="btn-zoom-in">Yakınlaş (+)</button>
-                    <button class="btn btn-dark" id="btn-zoom-out">Uzaklaş (-)</button>
+                    <button class="btn btn-dark" id="btn-zoom-in" style="font-size: 18px;">+</button>
+                    <button class="btn btn-dark" id="btn-zoom-out" style="font-size: 18px;">-</button>
                 </div>
             </div>
 
@@ -319,13 +319,13 @@
 
         if (currentTool === 'scalpel' && !chestOpen) {
             chestOpen = true; mainScene.style.backgroundImage = "url('kurbaga_acik.png')";
-            actionText.innerText = "Göğüs açıldı."; actionRibbon.style.backgroundColor = "#e8f5e9";
+            actionText.innerText = "Göğüs açıldı. Şimdi kalbi force transducer'a asın."; actionRibbon.style.backgroundColor = "#e8f5e9";
         }
         else if (currentTool === 'thread' && chestOpen && !heartAttached) {
             heartAttached = true; 
             mainScene.style.display = 'none'; 
             heartLayer.style.display = 'block'; 
-            actionText.innerText = "Kalp asıldı, atmaya başladı!"; actionRibbon.style.backgroundColor = "#e8f5e9";
+            actionText.innerText = "Kalp asıldı, atmaya başladı! Lütfen kaydı başlatın."; actionRibbon.style.backgroundColor = "#e8f5e9";
             lastFrameTime = performance.now(); 
             sessionStartTime = Date.now(); 
         }
@@ -475,15 +475,21 @@
         
         if (cardiogramData.length > 0) {
             let lastDataTime = cardiogramData[cardiogramData.length - 1].t;
-            let viewEndTime = lastDataTime;
+            let viewStartTime = 0;
+            let viewEndTime = timeWindow;
 
             if (!isRecording) {
+                // Kayıt durdurulduğunda slider ile ileri geri oynatma (Scrubbing) mantığı
                 let ratio = historySlider.value / 100;
-                viewEndTime = lastDataTime * ratio;
-                if (viewEndTime < timeWindow) viewEndTime = timeWindow; 
-            } else { historySlider.value = 100; }
-
-            let viewStartTime = Math.max(0, viewEndTime - timeWindow);
+                let maxStartTime = Math.max(0, lastDataTime - timeWindow);
+                viewStartTime = maxStartTime * ratio;
+                viewEndTime = viewStartTime + timeWindow;
+            } else { 
+                // Kayıt esnasında ekranı en sağa kitle
+                historySlider.value = 100; 
+                viewEndTime = lastDataTime;
+                viewStartTime = Math.max(0, viewEndTime - timeWindow);
+            }
 
             ctx.beginPath(); ctx.strokeStyle = '#d32f2f'; ctx.lineWidth = 1.8;
             
