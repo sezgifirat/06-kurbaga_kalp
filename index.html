@@ -6,23 +6,33 @@
     <title>Kurbağa Kalp Simülasyonu</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: Arial, sans-serif; }
+        
         body { 
             display: flex; justify-content: center; align-items: flex-start; 
-            background-color: #333; height: 100vh; overflow: hidden;
+            background-color: #333; 
+            min-height: 100vh; /* Minimum ekran boyutu kadar */
+            min-height: 100dvh; /* Yeni nesil tarayıcılar için dinamik yükseklik */
+            overflow-y: auto; /* Gerekirse dikey kaydırmaya izin ver */
+            overflow-x: hidden;
         }
         
-        /* MOBİL UYUMLU DİKEY TASARIM (Telefon Ekranı Tam Kaplama) */
+        /* MOBİL UYUMLU DİKEY TASARIM (Kaydırılabilir) */
         #app-container {
-            width: 100vw; height: 100vh; max-width: 600px; 
+            width: 100vw; min-height: 100vh; max-width: 600px; 
             background-color: #ffffff; display: flex; flex-direction: column;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+        }
+
+        /* Tıklama gecikmesini önlemek için */
+        .tool-btn, .btn, .stannius-btn, #history-slider, #heart-animation-layer, #main-scene {
+            touch-action: manipulation;
         }
 
         /* --- 1. KARDİYOGRAM ALANI (ÜST KISIM) --- */
         #cardiogram-section {
-            flex: 2.5; border-bottom: 2px solid #333; position: relative;
+            flex: none; height: 25vh; min-height: 150px; 
+            border-bottom: 2px solid #333; position: relative;
             background: #fff; display: flex; flex-direction: column;
-            min-height: 150px;
         }
         #cardiogram-canvas {
             width: 100%; flex: 1;
@@ -38,12 +48,15 @@
         }
 
         /* --- 2. ORTA ALAN (SAHNE VE ARAÇLAR) --- */
-        #middle-section { flex: 6; display: flex; flex-direction: column; border-bottom: 2px solid #333; }
+        #middle-section { 
+            flex: 1; display: flex; flex-direction: column; 
+            border-bottom: 2px solid #333; min-height: 300px; 
+        }
         
         #stage {
             flex: 1; position: relative; background-color: #fff;
             display: flex; justify-content: center; align-items: center; overflow: hidden;
-            min-height: 250px;
+            min-height: 160px; /* Mobilde araçlara yer kalsın diye küçültüldü */
         }
         
         #main-scene {
@@ -197,7 +210,7 @@
     // Güvenli başlatma
     let db, auth, currentUser;
     let sessionStartTime = null;
-    let hasLoggedPlay = false; // Bir seansta kayda sadece bir kez basıldığını saymak için
+    let hasLoggedPlay = false; 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'mia-kurbaga-lab';
     
     try {
@@ -212,7 +225,6 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUser = user;
-                        // Öğrencinin sisteme benzersiz girişini kaydet
                         const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'unique_users', user.uid);
                         setDoc(userRef, { sonGiris: serverTimestamp() }, { merge: true });
                     }
@@ -271,7 +283,7 @@
             const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats', 'main');
             updateDoc(statsRef, { 
                 toplamGecirilenSaniye: increment(durationSec)
-            }).catch(()=>{}); // Sessizce kapat
+            }).catch(()=>{});
         }
     });
 
@@ -299,7 +311,7 @@
             heartLayer.style.display = 'block'; 
             actionText.innerText = "Kalp asıldı, atmaya başladı!"; actionRibbon.style.backgroundColor = "#e8f5e9";
             lastFrameTime = performance.now(); 
-            sessionStartTime = Date.now(); // İstatistik: Süre başlangıcı
+            sessionStartTime = Date.now(); 
         }
         else if (currentTool === 'screw' && heartAttached) {
             isFrankStarling = !isFrankStarling; 
@@ -372,7 +384,7 @@
         if (!isRecording && cardiogramData.length === 0) recordStartTime = performance.now();
         isRecording = true; historySlider.disabled = true;
         actionText.innerText = "KAYIT DEVAM EDİYOR..."; actionRibbon.style.backgroundColor = "#ffcdd2";
-        logPlayToDatabase(); // İstatistik: Play sayacını artır
+        logPlayToDatabase(); 
     });
 
     document.getElementById('btn-stop').addEventListener('click', () => {
