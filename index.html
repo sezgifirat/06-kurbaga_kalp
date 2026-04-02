@@ -109,18 +109,31 @@
         
         .stannius-btn { grid-column: span 5; font-size: 16px; font-weight: bold; background-color: #bbdefb; padding: 12px; }
 
-        /* --- 3. ALT ALAN (TABLO VE KONTROLLER) --- */
-        #bottom-section { flex: none; display: flex; flex-direction: column; padding: 10px; gap: 10px; background-color: #f5f5f5; }
-        #data-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; }
-        #data-table td, #data-table th { border: 1px solid #666; padding: 8px; text-align: left; }
-        #data-table th { width: 65%; font-weight: normal; }
+        /* --- 3. YÜZEN PANELLER (SAĞ VE SOL EKRAN BOŞLUKLARI) --- */
+        #left-panel {
+            position: absolute; left: 8px; top: 10px;
+            display: flex; flex-direction: column; gap: 8px; z-index: 30;
+            width: 105px; pointer-events: auto;
+        }
+        #right-panel {
+            position: absolute; right: 8px; top: 10px;
+            display: flex; flex-direction: column; gap: 8px; z-index: 30;
+            width: 80px; pointer-events: auto;
+        }
         
-        #controls { display: flex; flex-direction: row; gap: 8px; width: 100%; }
-        .zoom-controls { display: flex; gap: 5px; flex: 1; }
-        .btn { flex: 1; font-weight: bold; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 15px; height: 44px; }
+        #data-table { 
+            width: 100%; border-collapse: collapse; font-size: 11px; 
+            background: rgba(255,255,255,0.9); box-shadow: 0 2px 4px rgba(0,0,0,0.3); 
+            border-radius: 4px; overflow: hidden; 
+        }
+        #data-table td, #data-table th { border: 1px solid #aaa; padding: 4px; text-align: center; }
+        #data-table th { font-weight: bold; background: #e0e0e0; }
+        
+        .zoom-controls { display: flex; flex-direction: column; gap: 4px; }
+        .btn { font-weight: bold; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 12px; height: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); touch-action: manipulation; }
         .btn-dark { background-color: #212121; }
-        .btn-red { background-color: #d32f2f; }
-        .btn-blue { background-color: #1976d2; }
+        .btn-red { background-color: #d32f2f; height: 38px; }
+        .btn-blue { background-color: #1976d2; height: 38px; }
     </style>
 </head>
 <body>
@@ -140,6 +153,26 @@
             </div>
             <!-- İMZA BURADA -->
             <img id="sfo-signature" src="sfo.png" alt="SFO İmza" onerror="this.style.display='none'">
+
+            <!-- YENİ EKLENEN SOL PANEL (TABLO VE YAKINLAŞTIRMA) -->
+            <div id="left-panel">
+                <table id="data-table">
+                    <tr style="background:#444; color:white;"><th colspan="2" style="font-size:10px; padding:2px;">DEĞERLER</th></tr>
+                    <tr><th style="width:55%;">V.BPM</th><td style="width:45%;" id="val-bpm-v">0</td></tr>
+                    <tr><th>A.BPM</th><td id="val-bpm-a">0</td></tr>
+                    <tr><th>Genlik</th><td id="val-amp">0.0</td></tr>
+                </table>
+                <div class="zoom-controls">
+                    <button class="btn btn-dark" id="btn-zoom-in">Yakınlaş (+)</button>
+                    <button class="btn btn-dark" id="btn-zoom-out">Uzaklaş (-)</button>
+                </div>
+            </div>
+
+            <!-- YENİ EKLENEN SAĞ PANEL (KAYDET/DURDUR) -->
+            <div id="right-panel">
+                <button class="btn btn-red" id="btn-record">Kaydet</button>
+                <button class="btn btn-blue" id="btn-stop">Durdur</button>
+            </div>
         </div>
         
         <div id="toolbar">
@@ -154,23 +187,6 @@
             <div class="tool-btn" data-tool="screw">🔩</div>
             <div class="tool-btn" data-tool="electric">⚡</div>
             <div class="tool-btn stannius-btn" data-tool="stannius">Stannius Bağı 🪢</div>
-        </div>
-    </div>
-
-    <div id="bottom-section">
-        <table id="data-table">
-            <tr><th>BPM (ventriküler)</th><td id="val-bpm-v">0</td></tr>
-            <tr><th>BPM (atriyal)</th><td id="val-bpm-a">0</td></tr>
-            <tr><th>Genlik (gram)</th><td id="val-amp">0.0</td></tr>
-        </table>
-        
-        <div id="controls">
-            <div class="zoom-controls">
-                <button class="btn btn-dark" id="btn-zoom-in">Yakınlaş +</button>
-                <button class="btn btn-dark" id="btn-zoom-out">Uzaklaş -</button>
-            </div>
-            <button class="btn btn-red" id="btn-record">Kaydet</button>
-            <button class="btn btn-blue" id="btn-stop">Durdur</button>
         </div>
     </div>
 </div>
