@@ -163,8 +163,9 @@
 </div>
 
 <script type="module">
-    // --- 1. ALAN (DOMAIN) KORUMASI ---
-   // const allowedDomains = ["miaacademia.com", "localhost", "127.0.0.1"];
+    // --- 1. ALAN (DOMAIN) KORUMASI (ŞU AN İNAKTİF) ---
+    /*
+    const allowedDomains = ["miaacademia.com", "localhost", "127.0.0.1"];
     const currentHost = window.location.hostname;
     const referrer = document.referrer;
     
@@ -179,6 +180,7 @@
         document.body.innerHTML = "<div style='padding:40px; text-align:center; font-family:sans-serif; color:#d32f2f; background:#fff; height:100vh;'><h2>Yetkisiz Erişim</h2><p>Bu simülasyon yalnızca <b>miaacademia.com</b> adresinde kullanılmak üzere lisanslanmıştır.</p></div>";
         throw new Error("Lisanssız kullanım girişimi engellendi.");
     }
+    */
 
     // --- 2. FIREBASE İSTATİSTİK ALTYAPISI ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
