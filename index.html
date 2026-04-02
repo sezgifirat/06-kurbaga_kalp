@@ -10,41 +10,46 @@
         body { 
             display: flex; justify-content: center; align-items: flex-start; 
             background-color: #333; 
-            min-height: 100vh; /* Minimum ekran boyutu kadar */
-            min-height: 100dvh; /* Yeni nesil tarayıcılar için dinamik yükseklik */
-            overflow-y: auto; /* Gerekirse dikey kaydırmaya izin ver */
+            min-height: 100vh; 
+            min-height: 100dvh; 
+            overflow-y: auto; 
             overflow-x: hidden;
         }
         
         /* MOBİL UYUMLU DİKEY TASARIM (Kaydırılabilir) */
         #app-container {
-            width: 100vw; min-height: 100vh; max-width: 600px; 
+            width: 100vw; min-height: 100vh; max-width: 600px; margin: 0 auto;
             background-color: #ffffff; display: flex; flex-direction: column;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
         }
 
         /* Tıklama gecikmesini önlemek için */
-        .tool-btn, .btn, .stannius-btn, #heart-animation-layer, #main-scene {
+        .tool-btn, .btn, .btn-zoom, .stannius-btn, #history-slider, #heart-animation-layer, #main-scene {
             touch-action: manipulation;
         }
 
         /* --- 1. KARDİYOGRAM ALANI (ÜST KISIM) --- */
         #cardiogram-section {
-            flex: none; height: 25vh; min-height: 150px; 
+            flex: none; /* Yükseklik taşmasını önlemek için sabitlendi */
             border-bottom: 2px solid #333; position: relative;
             background: #fff; display: flex; flex-direction: column;
         }
         #cardiogram-canvas {
-            width: 100%; flex: 1;
+            width: 100%; 
+            height: 160px; /* Telefonda taşmayı engellemek için kesin yükseklik */
+            flex: none;
             background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
             background-size: 20px 20px;
         }
-        #history-slider { width: 100%; margin: 0; height: 25px; cursor: pointer; background: #e0e0e0; }
+        #history-slider { 
+            width: 100%; margin: 0; height: 30px; cursor: pointer; background: #e0e0e0; flex: none;
+            z-index: 5;
+        }
         
         #action-ribbon {
             min-height: 35px; height: auto; background-color: #fff9c4; border-top: 1px solid #ddd;
             display: flex; align-items: center; justify-content: center; padding: 5px 10px; font-size: 13px; font-weight: bold; color: #333;
-            text-align: center;
+            text-align: center; flex: none; z-index: 5;
         }
 
         /* --- 2. ORTA ALAN (SAHNE VE ARAÇLAR) --- */
@@ -56,7 +61,7 @@
         #stage {
             flex: 1; position: relative; background-color: #fff;
             display: flex; justify-content: center; align-items: center; overflow: hidden;
-            min-height: 160px; /* Mobilde araçlara yer kalsın diye küçültüldü */
+            min-height: 160px; 
         }
         
         #main-scene {
@@ -129,11 +134,21 @@
         #data-table td, #data-table th { border: 1px solid #aaa; padding: 4px; text-align: center; }
         #data-table th { font-weight: bold; background: #e0e0e0; }
         
-        .zoom-controls { display: flex; flex-direction: row; gap: 4px; }
-        .btn { font-weight: bold; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 12px; height: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); touch-action: manipulation; }
-        .btn-dark { background-color: #212121; }
-        .btn-red { background-color: #d32f2f; height: 38px; }
-        .btn-blue { background-color: #1976d2; height: 38px; }
+        .btn { font-weight: bold; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 13px; height: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); touch-action: manipulation; }
+        .btn-red { background-color: #d32f2f; }
+        .btn-blue { background-color: #1976d2; }
+        
+        /* Sağ Paneldeki Yarı Boyutlu Kare Zoom Butonları */
+        .zoom-controls { 
+            display: flex; flex-direction: row; justify-content: space-between; gap: 4px; width: 100%; 
+        }
+        .btn-zoom { 
+            flex: 1; height: 26px; font-size: 18px; font-weight: bold;
+            display: flex; justify-content: center; align-items: center; 
+            border-radius: 4px; border: none; color: white; cursor: pointer; 
+            background-color: #212121; box-shadow: 0 2px 4px rgba(0,0,0,0.3); touch-action: manipulation; 
+        }
+        .btn-zoom:active { background-color: #424242; }
     </style>
 </head>
 <body>
@@ -154,7 +169,7 @@
             <!-- İMZA BURADA -->
             <img id="sfo-signature" src="sfo.png" alt="SFO İmza" onerror="this.style.display='none'">
 
-            <!-- YENİ EKLENEN SOL PANEL (TABLO VE YAKINLAŞTIRMA) -->
+            <!-- SOL PANEL (SADECE TABLO) -->
             <div id="left-panel">
                 <table id="data-table">
                     <tr style="background:#444; color:white;"><th colspan="2" style="font-size:10px; padding:2px;">DEĞERLER</th></tr>
@@ -162,16 +177,16 @@
                     <tr><th>Atrial<br>BPM</th><td id="val-bpm-a">0</td></tr>
                     <tr><th>Genlik</th><td id="val-amp">0.0</td></tr>
                 </table>
-                <div class="zoom-controls">
-                    <button class="btn btn-dark" id="btn-zoom-in" style="font-size: 18px;">+</button>
-                    <button class="btn btn-dark" id="btn-zoom-out" style="font-size: 18px;">-</button>
-                </div>
             </div>
 
-            <!-- YENİ EKLENEN SAĞ PANEL (KAYDET/DURDUR) -->
+            <!-- SAĞ PANEL (KAYDET/DURDUR VE + / - BUTONLARI) -->
             <div id="right-panel">
                 <button class="btn btn-red" id="btn-record">Kaydet</button>
                 <button class="btn btn-blue" id="btn-stop">Durdur</button>
+                <div class="zoom-controls">
+                    <button class="btn-zoom" id="btn-zoom-in">+</button>
+                    <button class="btn-zoom" id="btn-zoom-out">-</button>
+                </div>
             </div>
         </div>
         
@@ -213,17 +228,11 @@
 
     // --- 2. FIREBASE İSTATİSTİK ALTYAPISI ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, doc, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // NOT: Kodu ücretsiz bir hostinge taşıdığınızda çalışması için buraya KENDİ Firebase bilgilerinizi girmelisiniz.
-    let firebaseConfig = {
-        // apiKey: "SİZİN_API_KEY",
-        // authDomain: "SİZİN_DOMAIN.firebaseapp.com",
-        // projectId: "SİZİN_PROJECT_ID",
-    };
+    let firebaseConfig = {};
     
-    // Güvenli başlatma
     let db, auth, currentUser;
     let sessionStartTime = null;
     let hasLoggedPlay = false; 
@@ -237,17 +246,31 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            signInAnonymously(auth).then(() => {
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUser = user;
-                        const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'unique_users', user.uid);
-                        setDoc(userRef, { sonGiris: serverTimestamp() }, { merge: true });
+            const initAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
                     }
-                });
+                } catch(e) {
+                    console.error("Auth error:", e);
+                }
+            };
+            
+            initAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'unique_users', user.uid);
+                    setDoc(userRef, { sonGiris: serverTimestamp() }, { merge: true }).catch(e => console.error("Firestore Error:", e));
+                } else {
+                    currentUser = null;
+                }
             });
         }
-    } catch(e) { console.log("Firebase veritabanı ayarlanmadı veya kullanılamıyor."); }
+    } catch(e) { console.log("Firebase veritabanı ayarlanmadı veya kullanılamıyor.", e); }
 
     // --- 3. SİMÜLASYON KODLARI ---
     let currentTool = null;
@@ -292,7 +315,6 @@
     heartLayer.addEventListener('click', handleSceneClick);
     mainScene.addEventListener('click', handleSceneClick);
 
-    // Oturum süresi takibi için (Kalp asıldığında süreyi başlatıyoruz)
     window.addEventListener('beforeunload', () => {
         if (db && currentUser && sessionStartTime) {
             const durationSec = Math.floor((Date.now() - sessionStartTime) / 1000);
@@ -310,7 +332,7 @@
             setDoc(statsRef, { 
                 toplamOynatilma: increment(1),
                 sonOynatilmaTarihi: serverTimestamp()
-            }, { merge: true });
+            }, { merge: true }).catch(e => console.error("Firestore Error:", e));
         }
     }
 
@@ -479,13 +501,11 @@
             let viewEndTime = timeWindow;
 
             if (!isRecording) {
-                // Kayıt durdurulduğunda slider ile ileri geri oynatma (Scrubbing) mantığı
                 let ratio = historySlider.value / 100;
                 let maxStartTime = Math.max(0, lastDataTime - timeWindow);
                 viewStartTime = maxStartTime * ratio;
                 viewEndTime = viewStartTime + timeWindow;
             } else { 
-                // Kayıt esnasında ekranı en sağa kitle
                 historySlider.value = 100; 
                 viewEndTime = lastDataTime;
                 viewStartTime = Math.max(0, viewEndTime - timeWindow);
